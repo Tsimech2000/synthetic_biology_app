@@ -48,97 +48,64 @@ def genetic_oscillator():
     
     st.pyplot(fig)
 
-def crispr_logic_gates():
-    st.header("CRISPR-Based Logic Gate Simulator")
-    st.write("Simulate CRISPR-based genetic logic gates (NOT, AND, OR).")
+def stochastic_toggle_switch():
+    st.header("Stochastic Genetic Toggle Switch")
+    st.write("Simulating a genetic toggle switch with stochastic noise using the Gillespie Algorithm.")
     
-    # User selects logic gate type
-    gate_type = st.sidebar.selectbox("Select Logic Gate:", ["NOT", "AND", "OR"])
+    # Sidebar inputs
+    alpha1 = st.sidebar.slider("Alpha 1 (Gene A)", 0.1, 20.0, 10.0)
+    alpha2 = st.sidebar.slider("Alpha 2 (Gene B)", 0.1, 20.0, 10.0)
+    beta = st.sidebar.slider("Beta (Repression Strength)", 1.0, 5.0, 2.0)
+    gamma = st.sidebar.slider("Degradation Rate", 0.01, 1.0, 0.1)
+    t_max = st.sidebar.slider("Simulation Time", 10, 500, 100)
     
-    # User inputs for gRNA presence
-    gRNA1 = st.sidebar.checkbox("gRNA 1 Present")
-    gRNA2 = st.sidebar.checkbox("gRNA 2 Present")
-    
-    # Logic Gate Implementation
-    if gate_type == "NOT":
-        output = 0 if gRNA1 else 1  # NOT gate: gene OFF if gRNA present
-    elif gate_type == "AND":
-        output = 0 if (gRNA1 and gRNA2) else 1  # AND gate: gene OFF if both gRNAs present
-    elif gate_type == "OR":
-        output = 0 if (gRNA1 or gRNA2) else 1  # OR gate: gene OFF if at least one gRNA present
-    
-    # Display output
-    st.subheader(f"Gene Expression Output: {output}")
-
-def stochastic_gene_expression():
-    st.header("Stochastic Gene Expression Simulator")
-    st.write("This section simulates stochastic gene expression using the Gillespie algorithm.")
-    
-    # Sidebar inputs for reaction rates
-    transcription_rate = st.sidebar.slider("Transcription Rate", 0.1, 5.0, 1.0)
-    degradation_rate = st.sidebar.slider("Degradation Rate", 0.01, 1.0, 0.1)
-    max_time = st.sidebar.slider("Simulation Time", 10, 500, 100)
-    
-    # Gillespie Algorithm Implementation
-    def gillespie_simulation(transcription_rate, degradation_rate, max_time):
+    # Gillespie Algorithm for stochastic simulation
+    def gillespie_toggle(alpha1, alpha2, beta, gamma, max_time):
         time = 0
-        mRNA_count = 0
+        u, v = 1, 1
         time_points = [time]
-        mRNA_levels = [mRNA_count]
+        u_levels, v_levels = [u], [v]
         
         while time < max_time:
-            transcription_prob = transcription_rate
-            degradation_prob = degradation_rate * mRNA_count
-            total_rate = transcription_prob + degradation_prob
+            prod_u = alpha1 / (1 + v**beta)
+            prod_v = alpha2 / (1 + u**beta)
+            deg_u = gamma * u
+            deg_v = gamma * v
+            
+            total_rate = prod_u + prod_v + deg_u + deg_v
             
             if total_rate == 0:
                 break
             
             time += -np.log(random.random()) / total_rate
+            event = random.choices(['prod_u', 'prod_v', 'deg_u', 'deg_v'], 
+                                   weights=[prod_u, prod_v, deg_u, deg_v])[0]
             
-            if random.random() < transcription_prob / total_rate:
-                mRNA_count += 1
-            else:
-                if mRNA_count > 0:
-                    mRNA_count -= 1
+            if event == 'prod_u':
+                u += 1
+            elif event == 'prod_v':
+                v += 1
+            elif event == 'deg_u' and u > 0:
+                u -= 1
+            elif event == 'deg_v' and v > 0:
+                v -= 1
             
             time_points.append(time)
-            mRNA_levels.append(mRNA_count)
+            u_levels.append(u)
+            v_levels.append(v)
         
-        return time_points, mRNA_levels
+        return time_points, u_levels, v_levels
     
-    # Run the simulation
-    time_points, mRNA_levels = gillespie_simulation(transcription_rate, degradation_rate, max_time)
+    # Run stochastic simulation
+    time_points, u_levels, v_levels = gillespie_toggle(alpha1, alpha2, beta, gamma, t_max)
     
     # Plot results
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.step(time_points, mRNA_levels, where='post')
+    ax.step(time_points, u_levels, where='post', label='Protein U (Gene A)')
+    ax.step(time_points, v_levels, where='post', label='Protein V (Gene B)')
     ax.set_xlabel('Time')
-    ax.set_ylabel('mRNA Count')
-    ax.set_title('Stochastic Gene Expression (Gillespie Algorithm)')
-    ax.grid(True)
-    
-    st.pyplot(fig)
-
-def quorum_sensing():
-    st.header("Bacterial Quorum Sensing Simulator")
-    st.write("This section models bacterial communication through quorum sensing.")
-    
-    # Sidebar inputs
-    population = st.sidebar.slider("Initial Bacterial Population", 1, 1000, 100)
-    production_rate = st.sidebar.slider("Autoinducer Production Rate", 0.1, 5.0, 1.0)
-    degradation_rate = st.sidebar.slider("Autoinducer Degradation Rate", 0.01, 1.0, 0.1)
-    threshold = st.sidebar.slider("Activation Threshold", 10, 500, 100)
-    
-    time = np.linspace(0, 50, 500)
-    autoinducer = production_rate * population * (1 - np.exp(-degradation_rate * time))
-    
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(time, autoinducer, label='Autoinducer Level')
-    ax.axhline(threshold, color='r', linestyle='--', label='Threshold')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Autoinducer Level')
-    ax.set_title('Bacterial Quorum Sensing Activation')
+    ax.set_ylabel('Protein Count')
+    ax.set_title('Stochastic Toggle Switch Simulation')
     ax.legend()
     ax.grid(True)
     
@@ -151,17 +118,13 @@ st.title("Synthetic Biology Multi-Simulation App")
 simulation_choice = st.sidebar.selectbox(
     "Choose a Simulation:",
     ("Genetic Oscillator (Repressilator)", 
-     "CRISPR-Based Logic Gate Simulator", 
-     "Stochastic Gene Expression Simulator", 
-     "Bacterial Quorum Sensing Simulator")
+     "Stochastic Genetic Toggle Switch")
 )
 
 # Load and run the selected simulation
 dispatcher = {
     "Genetic Oscillator (Repressilator)": genetic_oscillator,
-    "CRISPR-Based Logic Gate Simulator": crispr_logic_gates,
-    "Stochastic Gene Expression Simulator": stochastic_gene_expression,
-    "Bacterial Quorum Sensing Simulator": quorum_sensing,
+    "Stochastic Genetic Toggle Switch": stochastic_toggle_switch,
 }
 
 dispatcher[simulation_choice]()
