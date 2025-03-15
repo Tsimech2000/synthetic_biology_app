@@ -1,7 +1,8 @@
 import streamlit as st
 import numpy as np
 from scipy.integrate import odeint
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 import random
 
 def genetic_oscillator():
@@ -35,18 +36,14 @@ def genetic_oscillator():
     # Extract solutions
     m1, m2, m3, p1, p2, p3 = sol.T
     
-    # Plot results
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(t, p1, label='Protein 1')
-    ax.plot(t, p2, label='Protein 2')
-    ax.plot(t, p3, label='Protein 3')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Protein Concentration')
-    ax.set_title('Repressilator Dynamics')
-    ax.legend()
-    ax.grid(True)
+    # Interactive Plot
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=t, y=p1, mode='lines', name='Protein 1'))
+    fig.add_trace(go.Scatter(x=t, y=p2, mode='lines', name='Protein 2'))
+    fig.add_trace(go.Scatter(x=t, y=p3, mode='lines', name='Protein 3'))
+    fig.update_layout(title="Repressilator Dynamics", xaxis_title="Time", yaxis_title="Protein Concentration")
     
-    st.pyplot(fig)
+    st.plotly_chart(fig)
 
 def stochastic_toggle_switch():
     st.header("Stochastic Genetic Toggle Switch")
@@ -99,17 +96,13 @@ def stochastic_toggle_switch():
     # Run stochastic simulation
     time_points, u_levels, v_levels = gillespie_toggle(alpha1, alpha2, beta, gamma, t_max)
     
-    # Plot results
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.step(time_points, u_levels, where='post', label='Protein U (Gene A)')
-    ax.step(time_points, v_levels, where='post', label='Protein V (Gene B)')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Protein Count')
-    ax.set_title('Stochastic Toggle Switch Simulation')
-    ax.legend()
-    ax.grid(True)
+    # Interactive Plot
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=time_points, y=u_levels, mode='lines+markers', name='Protein U (Gene A)'))
+    fig.add_trace(go.Scatter(x=time_points, y=v_levels, mode='lines+markers', name='Protein V (Gene B)'))
+    fig.update_layout(title="Stochastic Toggle Switch Simulation", xaxis_title="Time", yaxis_title="Protein Count")
     
-    st.pyplot(fig)
+    st.plotly_chart(fig)
 
 # Streamlit App
 st.title("Synthetic Biology Multi-Simulation App")
