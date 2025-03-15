@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 from scipy.integrate import odeint
-import plotly.express as px
 import plotly.graph_objects as go
 import random
 
@@ -121,3 +120,4 @@ dispatcher = {
 }
 
 dispatcher[simulation_choice]()
+
