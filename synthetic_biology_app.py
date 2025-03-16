@@ -44,13 +44,30 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
-def crispr_logic_gate():
-    st.header("CRISPR-Based Logic Gate Simulator")
-    st.write("Simulating gene expression regulation using CRISPR-based logic gates.")
-
 def quorum_sensing():
     st.header("Bacterial Quorum Sensing Simulator")
     st.write("Simulating bacterial communication via autoinducer accumulation.")
+    
+    # Sidebar inputs
+    production = st.sidebar.slider("Autoinducer Production Rate", 0.1, 5.0, 1.0)
+    degradation = st.sidebar.slider("Degradation Rate", 0.01, 1.0, 0.1)
+    t_max = st.sidebar.slider("Simulation Time", 10, 200, 100)
+    
+    def quorum_model(y, t, production, degradation):
+        A = y[0]
+        dA_dt = production - degradation * A
+        return [dA_dt]
+    
+    y0 = [1.0]
+    t = np.linspace(0, t_max, 500)
+    sol = odeint(quorum_model, y0, t, args=(production, degradation))
+    A = sol.T[0]
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=t, y=A, mode='lines', name='Autoinducer Concentration'))
+    fig.update_layout(title="Bacterial Quorum Sensing Simulation", xaxis_title="Time", yaxis_title="Concentration")
+    
+    st.plotly_chart(fig)
 
 def enzyme_kinetics():
     st.header("Enzyme Kinetics Simulator")
@@ -94,7 +111,6 @@ st.title("Synthetic Biology Multi-Simulation App")
 simulation_choice = st.sidebar.selectbox(
     "Choose a Simulation:",
     ("Genetic Oscillator (Repressilator)", 
-     "CRISPR-Based Logic Gate Simulator",
      "Bacterial Quorum Sensing Simulator",
      "Enzyme Kinetics Simulator")
 )
@@ -102,9 +118,9 @@ simulation_choice = st.sidebar.selectbox(
 # Load and run the selected simulation
 dispatcher = {
     "Genetic Oscillator (Repressilator)": genetic_oscillator,
-    "CRISPR-Based Logic Gate Simulator": crispr_logic_gate,
     "Bacterial Quorum Sensing Simulator": quorum_sensing,
     "Enzyme Kinetics Simulator": enzyme_kinetics,
 }
 
 dispatcher[simulation_choice]()
+
