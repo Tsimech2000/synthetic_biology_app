@@ -44,38 +44,59 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
-def metabolic_pathway():
-    st.header("Metabolic Pathway Simulator")
-    st.write("This section simulates a basic metabolic pathway using enzyme kinetics.")
+def stochastic_toggle_switch():
+    st.header("Stochastic Genetic Toggle Switch")
+    st.write("This section simulates a toggle switch with stochastic effects using the Gillespie algorithm.")
     
     # Sidebar inputs
-    k1 = st.sidebar.slider("Enzyme Rate Constant 1 (k1)", 0.1, 10.0, 1.0)
-    k2 = st.sidebar.slider("Enzyme Rate Constant 2 (k2)", 0.1, 10.0, 1.0)
-    S0 = st.sidebar.slider("Initial Substrate Concentration (S0)", 1.0, 50.0, 10.0)
-    t_max = st.sidebar.slider("Simulation Time", 10, 200, 100)
+    alpha = st.sidebar.slider("Transcription Rate (α)", 0.1, 20.0, 10.0)
+    beta = st.sidebar.slider("Cooperativity (β)", 1.0, 5.0, 2.0)
+    gamma = st.sidebar.slider("Degradation Rate (γ)", 0.01, 1.0, 0.1)
+    t_max = st.sidebar.slider("Simulation Time", 10, 500, 100)
     
-    # Define ODEs for the metabolic pathway
-    def pathway(y, t, k1, k2):
-        S, P = y
-        dS_dt = -k1 * S
-        dP_dt = k1 * S - k2 * P
-        return [dS_dt, dP_dt]
+    # Gillespie Algorithm Implementation
+    def gillespie_toggle(alpha, beta, gamma, max_time):
+        time = 0
+        u, v = 1, 1
+        time_points = [time]
+        u_levels, v_levels = [u], [v]
+        
+        while time < max_time:
+            prod_u = alpha / (1 + v**beta)
+            prod_v = alpha / (1 + u**beta)
+            deg_u = gamma * u
+            deg_v = gamma * v
+            
+            total_rate = prod_u + prod_v + deg_u + deg_v
+            if total_rate == 0:
+                break
+            
+            time += -np.log(random.random()) / total_rate
+            event = random.choices(['prod_u', 'prod_v', 'deg_u', 'deg_v'], weights=[prod_u, prod_v, deg_u, deg_v])[0]
+            
+            if event == 'prod_u':
+                u += 1
+            elif event == 'prod_v':
+                v += 1
+            elif event == 'deg_u' and u > 0:
+                u -= 1
+            elif event == 'deg_v' and v > 0:
+                v -= 1
+            
+            time_points.append(time)
+            u_levels.append(u)
+            v_levels.append(v)
+        
+        return time_points, u_levels, v_levels
     
-    # Initial conditions
-    y0 = [S0, 0.0]
-    t = np.linspace(0, t_max, 500)
-    
-    # Solve ODEs
-    sol = odeint(pathway, y0, t, args=(k1, k2))
-    
-    # Extract solutions
-    S, P = sol.T
+    # Run the simulation
+    time_points, u_levels, v_levels = gillespie_toggle(alpha, beta, gamma, t_max)
     
     # Interactive Plot
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t, y=S, mode='lines', name='Substrate'))
-    fig.add_trace(go.Scatter(x=t, y=P, mode='lines', name='Product'))
-    fig.update_layout(title="Metabolic Pathway Dynamics", xaxis_title="Time", yaxis_title="Concentration")
+    fig.add_trace(go.Scatter(x=time_points, y=u_levels, mode='lines', name='Gene A Expression'))
+    fig.add_trace(go.Scatter(x=time_points, y=v_levels, mode='lines', name='Gene B Expression'))
+    fig.update_layout(title="Stochastic Toggle Switch Dynamics", xaxis_title="Time", yaxis_title="Expression Level")
     
     st.plotly_chart(fig)
 
@@ -86,13 +107,13 @@ st.title("Synthetic Biology Multi-Simulation App")
 simulation_choice = st.sidebar.selectbox(
     "Choose a Simulation:",
     ("Genetic Oscillator (Repressilator)", 
-     "Metabolic Pathway Simulator")
+     "Stochastic Genetic Toggle Switch")
 )
 
 # Load and run the selected simulation
 dispatcher = {
     "Genetic Oscillator (Repressilator)": genetic_oscillator,
-    "Metabolic Pathway Simulator": metabolic_pathway,
+    "Stochastic Genetic Toggle Switch": stochastic_toggle_switch,
 }
 
 dispatcher[simulation_choice]()
