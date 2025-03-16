@@ -55,13 +55,16 @@ def stochastic_toggle_switch():
     t_max = st.sidebar.slider("Simulation Time", 10, 500, 100)
     
     # Gillespie Algorithm Implementation
-    def gillespie_toggle(alpha, beta, gamma, max_time):
+    def gillespie_toggle(alpha, beta, gamma, max_time, max_steps=5000):
         time = 0
         u, v = 1, 1
         time_points = [time]
         u_levels, v_levels = [u], [v]
         
-        while time < max_time:
+        for _ in range(max_steps):  # Prevent infinite loops
+            if time >= max_time:
+                break
+            
             prod_u = alpha / (1 + v**beta)
             prod_v = alpha / (1 + u**beta)
             deg_u = gamma * u
@@ -92,6 +95,12 @@ def stochastic_toggle_switch():
     # Run the simulation
     time_points, u_levels, v_levels = gillespie_toggle(alpha, beta, gamma, t_max)
     
+    # Ensure time points are sorted for Plotly
+    sorted_indices = np.argsort(time_points)
+    time_points = np.array(time_points)[sorted_indices]
+    u_levels = np.array(u_levels)[sorted_indices]
+    v_levels = np.array(v_levels)[sorted_indices]
+    
     # Interactive Plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=time_points, y=u_levels, mode='lines', name='Gene A Expression'))
@@ -117,3 +126,4 @@ dispatcher = {
 }
 
 dispatcher[simulation_choice]()
+
