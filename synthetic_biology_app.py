@@ -44,6 +44,16 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
+def crispr_logic_gate():
+    st.header("CRISPR-Based Logic Gate Simulator")
+    st.write("Simulating gene expression regulation using CRISPR-based logic gates.")
+    st.write("(Placeholder for logic gate model)")
+
+def quorum_sensing():
+    st.header("Bacterial Quorum Sensing Simulator")
+    st.write("Simulating bacterial communication and autoinducer accumulation.")
+    st.write("(Placeholder for quorum sensing model)")
+
 def enzyme_kinetics():
     st.header("Enzyme Kinetics Simulator")
     st.write("This section simulates enzyme kinetics using Michaelis-Menten equations.")
@@ -86,14 +96,16 @@ st.title("Synthetic Biology Multi-Simulation App")
 simulation_choice = st.sidebar.selectbox(
     "Choose a Simulation:",
     ("Genetic Oscillator (Repressilator)", 
-     "Stochastic Genetic Toggle Switch Simulator",
+     "CRISPR-Based Logic Gate Simulator",
+     "Bacterial Quorum Sensing Simulator",
      "Enzyme Kinetics Simulator")
 )
 
 # Load and run the selected simulation
 dispatcher = {
     "Genetic Oscillator (Repressilator)": genetic_oscillator,
-    "Stochastic Genetic Toggle Switch Simulator": stochastic_toggle_switch,
+    "CRISPR-Based Logic Gate Simulator": crispr_logic_gate,
+    "Bacterial Quorum Sensing Simulator": quorum_sensing,
     "Enzyme Kinetics Simulator": enzyme_kinetics,
 }
 
