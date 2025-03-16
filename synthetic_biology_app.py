@@ -44,62 +44,38 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
-def stochastic_toggle_switch():
-    st.header("Stochastic Genetic Toggle Switch Simulator")
-    st.write("Simulating a genetic toggle switch with stochastic noise using the Gillespie Algorithm.")
+def enzyme_kinetics():
+    st.header("Enzyme Kinetics Simulator")
+    st.write("This section simulates enzyme kinetics using Michaelis-Menten equations.")
     
     # Sidebar inputs
-    alpha = st.sidebar.slider("Transcription Rate (α)", 0.1, 20.0, 10.0)
-    beta = st.sidebar.slider("Cooperativity (β)", 1.0, 5.0, 2.0)
-    gamma = st.sidebar.slider("Degradation Rate (γ)", 0.01, 1.0, 0.1)
-    t_max = st.sidebar.slider("Simulation Time", 10, 500, 100)
+    Vmax = st.sidebar.slider("Maximum Reaction Rate (Vmax)", 0.1, 10.0, 1.0)
+    Km = st.sidebar.slider("Michaelis Constant (Km)", 0.1, 10.0, 1.0)
+    S0 = st.sidebar.slider("Initial Substrate Concentration (S0)", 0.1, 50.0, 10.0)
+    t_max = st.sidebar.slider("Simulation Time", 10, 200, 100)
     
-    # Gillespie Algorithm Implementation
-    def gillespie_toggle(alpha, beta, gamma, max_time, max_steps=5000):
-        time = 0
-        u, v = 1, 1
-        time_points = [time]
-        u_levels, v_levels = [u], [v]
-        
-        for _ in range(max_steps):  # Prevent infinite loops
-            if time >= max_time:
-                break
-            
-            prod_u = alpha / (1 + v**beta)
-            prod_v = alpha / (1 + u**beta)
-            deg_u = gamma * u
-            deg_v = gamma * v
-            
-            total_rate = prod_u + prod_v + deg_u + deg_v
-            if total_rate == 0:
-                break
-            
-            time += -np.log(random.random()) / total_rate
-            event = random.choices(['prod_u', 'prod_v', 'deg_u', 'deg_v'], weights=[prod_u, prod_v, deg_u, deg_v])[0]
-            
-            if event == 'prod_u':
-                u += 1
-            elif event == 'prod_v':
-                v += 1
-            elif event == 'deg_u' and u > 0:
-                u -= 1
-            elif event == 'deg_v' and v > 0:
-                v -= 1
-            
-            time_points.append(time)
-            u_levels.append(u)
-            v_levels.append(v)
-        
-        return time_points, u_levels, v_levels
+    # Define Michaelis-Menten equation
+    def michaelis_menten(y, t, Vmax, Km):
+        S, P = y
+        dS_dt = -Vmax * S / (Km + S)
+        dP_dt = Vmax * S / (Km + S)
+        return [dS_dt, dP_dt]
     
-    # Run the simulation
-    time_points, u_levels, v_levels = gillespie_toggle(alpha, beta, gamma, t_max)
+    # Initial conditions
+    y0 = [S0, 0.0]
+    t = np.linspace(0, t_max, 500)
+    
+    # Solve ODEs
+    sol = odeint(michaelis_menten, y0, t, args=(Vmax, Km))
+    
+    # Extract solutions
+    S, P = sol.T
     
     # Interactive Plot
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=time_points, y=u_levels, mode='lines', name='Gene A Expression'))
-    fig.add_trace(go.Scatter(x=time_points, y=v_levels, mode='lines', name='Gene B Expression'))
-    fig.update_layout(title="Stochastic Toggle Switch Dynamics", xaxis_title="Time", yaxis_title="Expression Level")
+    fig.add_trace(go.Scatter(x=t, y=S, mode='lines', name='Substrate'))
+    fig.add_trace(go.Scatter(x=t, y=P, mode='lines', name='Product'))
+    fig.update_layout(title="Enzyme Kinetics Simulation", xaxis_title="Time", yaxis_title="Concentration")
     
     st.plotly_chart(fig)
 
