@@ -44,6 +44,20 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
+def crispr_logic_gate():
+    st.header("CRISPR-Based Logic Gate Simulator")
+    st.write("Simulating gene expression regulation using CRISPR-based logic gates.")
+    
+    # Placeholder function to be implemented with real logic gate equations
+    st.write("Feature coming soon!")
+
+def quorum_sensing():
+    st.header("Bacterial Quorum Sensing Simulator")
+    st.write("Simulating bacterial communication via autoinducer accumulation.")
+    
+    # Placeholder function to be implemented with quorum sensing equations
+    st.write("Feature coming soon!")
+
 def enzyme_kinetics():
     st.header("Enzyme Kinetics Simulator")
     st.write("This section simulates enzyme kinetics using Michaelis-Menten equations.")
