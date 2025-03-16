@@ -44,54 +44,38 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
-def crispr_logic_gate():
-    st.header("CRISPR-Based Logic Gate Simulator")
-    st.write("Simulating gene regulation using CRISPR logic gates.")
+def enzyme_kinetics():
+    st.header("Enzyme Kinetics Simulator")
+    st.write("This section simulates enzyme kinetics using Michaelis-Menten equations.")
     
     # Sidebar inputs
-    activation = st.sidebar.slider("Activation Rate", 0.1, 5.0, 1.0)
-    repression = st.sidebar.slider("Repression Rate", 0.1, 5.0, 1.0)
+    Vmax = st.sidebar.slider("Maximum Reaction Rate (Vmax)", 0.1, 10.0, 1.0)
+    Km = st.sidebar.slider("Michaelis Constant (Km)", 0.1, 10.0, 1.0)
+    S0 = st.sidebar.slider("Initial Substrate Concentration (S0)", 0.1, 50.0, 10.0)
     t_max = st.sidebar.slider("Simulation Time", 10, 200, 100)
     
-    def crispr_model(y, t, activation, repression):
-        A, B = y
-        dA_dt = activation - repression * A
-        dB_dt = activation * A - repression * B
-        return [dA_dt, dB_dt]
+    # Define Michaelis-Menten equation
+    def michaelis_menten(y, t, Vmax, Km):
+        S, P = y
+        dS_dt = -Vmax * S / (Km + S)
+        dP_dt = Vmax * S / (Km + S)
+        return [dS_dt, dP_dt]
     
-    y0 = [0.0, 0.0]
+    # Initial conditions
+    y0 = [S0, 0.0]
     t = np.linspace(0, t_max, 500)
-    sol = odeint(crispr_model, y0, t, args=(activation, repression))
-    A, B = sol.T
     
+    # Solve ODEs
+    sol = odeint(michaelis_menten, y0, t, args=(Vmax, Km))
+    
+    # Extract solutions
+    S, P = sol.T
+    
+    # Interactive Plot
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t, y=A, mode='lines', name='Gene A Expression'))
-    fig.add_trace(go.Scatter(x=t, y=B, mode='lines', name='Gene B Expression'))
-    fig.update_layout(title="CRISPR Logic Gate Simulation", xaxis_title="Time", yaxis_title="Expression Level")
-    
-    st.plotly_chart(fig)
-
-def quorum_sensing():
-    st.header("Bacterial Quorum Sensing Simulator")
-    st.write("Simulating bacterial communication via autoinducer accumulation.")
-    
-    production = st.sidebar.slider("Autoinducer Production Rate", 0.1, 5.0, 1.0)
-    degradation = st.sidebar.slider("Degradation Rate", 0.01, 1.0, 0.1)
-    t_max = st.sidebar.slider("Simulation Time", 10, 200, 100)
-    
-    def quorum_model(y, t, production, degradation):
-        A = y[0]
-        dA_dt = production - degradation * A
-        return [dA_dt]
-    
-    y0 = [1.0]
-    t = np.linspace(0, t_max, 500)
-    sol = odeint(quorum_model, y0, t, args=(production, degradation))
-    A = sol.T[0]
-    
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t, y=A, mode='lines', name='Autoinducer Concentration'))
-    fig.update_layout(title="Bacterial Quorum Sensing Simulation", xaxis_title="Time", yaxis_title="Concentration")
+    fig.add_trace(go.Scatter(x=t, y=S, mode='lines', name='Substrate'))
+    fig.add_trace(go.Scatter(x=t, y=P, mode='lines', name='Product'))
+    fig.update_layout(title="Enzyme Kinetics Simulation", xaxis_title="Time", yaxis_title="Concentration")
     
     st.plotly_chart(fig)
 
