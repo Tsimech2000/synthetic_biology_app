@@ -45,8 +45,8 @@ def genetic_oscillator():
     st.plotly_chart(fig)
 
 def stochastic_toggle_switch():
-    st.header("Stochastic Genetic Toggle Switch")
-    st.write("This section simulates a toggle switch with stochastic effects using the Gillespie algorithm.")
+    st.header("Stochastic Genetic Toggle Switch Simulator")
+    st.write("Simulating a genetic toggle switch with stochastic noise using the Gillespie Algorithm.")
     
     # Sidebar inputs
     alpha = st.sidebar.slider("Transcription Rate (α)", 0.1, 20.0, 10.0)
@@ -95,12 +95,6 @@ def stochastic_toggle_switch():
     # Run the simulation
     time_points, u_levels, v_levels = gillespie_toggle(alpha, beta, gamma, t_max)
     
-    # Ensure time points are sorted for Plotly
-    sorted_indices = np.argsort(time_points)
-    time_points = np.array(time_points)[sorted_indices]
-    u_levels = np.array(u_levels)[sorted_indices]
-    v_levels = np.array(v_levels)[sorted_indices]
-    
     # Interactive Plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=time_points, y=u_levels, mode='lines', name='Gene A Expression'))
@@ -116,14 +110,15 @@ st.title("Synthetic Biology Multi-Simulation App")
 simulation_choice = st.sidebar.selectbox(
     "Choose a Simulation:",
     ("Genetic Oscillator (Repressilator)", 
-     "Stochastic Genetic Toggle Switch")
+     "Stochastic Genetic Toggle Switch Simulator",
+     "Enzyme Kinetics Simulator")
 )
 
 # Load and run the selected simulation
 dispatcher = {
     "Genetic Oscillator (Repressilator)": genetic_oscillator,
-    "Stochastic Genetic Toggle Switch": stochastic_toggle_switch,
+    "Stochastic Genetic Toggle Switch Simulator": stochastic_toggle_switch,
+    "Enzyme Kinetics Simulator": enzyme_kinetics,
 }
 
 dispatcher[simulation_choice]()
-
