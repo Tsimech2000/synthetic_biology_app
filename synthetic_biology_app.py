@@ -44,40 +44,17 @@ def genetic_oscillator():
     
     st.plotly_chart(fig)
 
+def crispr_logic_gate():
+    st.header("CRISPR-Based Logic Gate Simulator")
+    st.write("Simulating gene expression regulation using CRISPR-based logic gates.")
+
+def quorum_sensing():
+    st.header("Bacterial Quorum Sensing Simulator")
+    st.write("Simulating bacterial communication via autoinducer accumulation.")
+
 def enzyme_kinetics():
     st.header("Enzyme Kinetics Simulator")
-    st.write("This section simulates enzyme kinetics using Michaelis-Menten equations.")
-    
-    # Sidebar inputs
-    Vmax = st.sidebar.slider("Maximum Reaction Rate (Vmax)", 0.1, 10.0, 1.0)
-    Km = st.sidebar.slider("Michaelis Constant (Km)", 0.1, 10.0, 1.0)
-    S0 = st.sidebar.slider("Initial Substrate Concentration (S0)", 0.1, 50.0, 10.0)
-    t_max = st.sidebar.slider("Simulation Time", 10, 200, 100)
-    
-    # Define Michaelis-Menten equation
-    def michaelis_menten(y, t, Vmax, Km):
-        S, P = y
-        dS_dt = -Vmax * S / (Km + S)
-        dP_dt = Vmax * S / (Km + S)
-        return [dS_dt, dP_dt]
-    
-    # Initial conditions
-    y0 = [S0, 0.0]
-    t = np.linspace(0, t_max, 500)
-    
-    # Solve ODEs
-    sol = odeint(michaelis_menten, y0, t, args=(Vmax, Km))
-    
-    # Extract solutions
-    S, P = sol.T
-    
-    # Interactive Plot
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t, y=S, mode='lines', name='Substrate'))
-    fig.add_trace(go.Scatter(x=t, y=P, mode='lines', name='Product'))
-    fig.update_layout(title="Enzyme Kinetics Simulation", xaxis_title="Time", yaxis_title="Concentration")
-    
-    st.plotly_chart(fig)
+    st.write("Simulating enzyme kinetics using Michaelis-Menten equations.")
 
 # Streamlit App
 st.title("Synthetic Biology Multi-Simulation App")
